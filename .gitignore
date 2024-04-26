@@ -1,0 +1,13 @@
+/ELN_file_watcher.iml
+/efw_receiver/efw_receiver.iml
+.idea/
+/efw_log.txt
+/efw_receiver/efw_receiver_log.txt
+/bin/efw_receiver_log.txt
+/testDir/
+/args.json
+/args.json.bck
+/193.196.55.54.crt
+/server.crt
+/temp/
+/bin/
