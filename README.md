@@ -1,64 +1,60 @@
-# ELN_file_watcher
-*Version 1.2*
+# Shuttle
+*Version 1.0*
 
-Once all files in a subdirectory <CMD arg -src>
-(or a file directly in <CMD arg -src>) have not been
-modified for about exactly <CMD arg -duration> seconds,
-the subdirectory is sent to a remote WebDAV or SFTP server at <CMD arg -dst>.
+*This project has been moved from [ELN_file_watcher](https://github.com/ComPlat/ELN_file_watcher)*
+
+This utility facilitates the transfer of files from a source device to a target location, enabling seamless access for Chemotion. It automatically moves files from a specified source directory to a designated destination server via WebDAV or SFTP.
 
 **Important**
 1) If you want to run this tool on Windows XP it has to be compiled with go version 1.10.8.
-2) If the tool is used with the SFTP protocol under Windows XP, you must also save a protable
-   version of WinSCP (WinSCP)[https://winscp.net/download/WinSCP-5.21.5-Portable.zip] in the same folder as the efw.exe.
-
-## Usage
-
-efw -duration &lt;integer&gt; -src &lt;folder&gt; -dst &lt;url&gt;/ -user &lt;username&gt; -pass &lt;password&gt; [-zip]
-
-    -name string
-        Name of the EFW instance. This name is used to create a working folder in the user home directory. .
-    
-    -duration [int]
-        Duration in seconds, i.e., how long a file must
-        not be changed before sent. (default 300)
-    
-    -src [string]
-        Source directory to be watched.
-    
-    -dst [string]
-        WebDAV destination URL. If the destination is on the lsdf, the URL should be as follows:
-        https://os-webdav.lsdf.kit.edu/<OE>/<inst>/projects/<PROJECTNAME>/
-            <OE>-Organisationseinheit, z.B. kit.
-            <inst>-Institut-Name, z.B. ioc, scc, ikp, imk-asf etc.
-            <PROJRCTNAME>-Projekt-Name
-
-    -pass [string]
-        WebDAV Password
-
-    -user [string]
-        WebDAV user or SFTP user
-  
-    -type [string: file|folder|zip]
-         Type must be 'file', 'folder' or 'zip'. The 'file' option means that each file is 
-         handled individually, the 'folder' option means that entire folders are transmitted
-         only when all files in them are ready. The option 'zip' sends a folder zipped, only
-         when all files in a folder are ready.
-   
-    -crt (Optional) [string]
-         Path to server TLS certificate. Only needed if the server has a self signed certificate.
+2) If the tool is used with the SFTP protocol under Windows XP, you must also save a portable
+   version of WinSCP [WinSCP](https://winscp.net/download/WinSCP-5.21.5-Portable.zip) in the same folder as the efw.exe.
 
 ## Setup the efw on a Windows system
-2) Download the **efw_run_example.bat**, the **efw.exe** and the **task_example.vbs** for your system [here](https://github.com/ComPlat/ELN_file_watcher/releases/tag/latest)
-2) Copy the **efw_{system}.exe** and save it **as efw.exe**. Additionally, download the **efw_run_example.bat** to the target directory on your target machine
-   - In the following we use the example "C:\Program Files\file_exporter".
-3) Replace in the **task_example.vbs**:
-   - "&lt;Full path to run_.bat&gt;" with "C:\Program Files\file_exporter\efw_run_example.bat"
-4) Replace in the **efw_run_example.bat**:
-   - &lt;Path to efw.exe&gt; with "C:\Program Files\file_exporter\"
-   - Setup all parameter (hint: use _efw.exe -h_):
-   - -dst, -src, -crt, -duration, -user, -pass, -crt, -zip, -name, -transfer, -type
-5) copy the **task_example.vbs** into the startup directory
-   - Hint: **Windows Key + R** to open run and type **shell:startup**. This will open Task Scheduler
+
+Pleaser us the [ShuttleBuilder](https://github.com/ComPlat/shuttlebuilder) to build an executable instance of the shuttle. It contains detailed instruction on how to set it up.
+
+If you do not want to use ShuttleBuilder you can compile it using GO version 1.19.3. Copy the executable into your source device. 
+Follow the section Usage for the configurations.
+
+## Usage
+**If you have used the [ShuttleBuilder](https://github.com/ComPlat/shuttlebuilder) it is not necessary to add the cli arguments!**
+
+To use the utility, run the following command:
+```shell
+efw -src <source_directory_path> -duration <time_in_seconds> -dst <destination_server> -user <username> -pass <password> -type <file|folder|zip> -transfer <webdav|sftp>
+```
+
+Replace <source_directory_path> with the path to the source directory 
+containing the files to be transferred. <time_in_seconds> specifies the
+period of time after which a file must be unchanged for it to be considered for transfer. <destination_server>
+should be the WebDAV/SFTP server URL. You also need to provide a username (-user)
+and password (-pass) for authentication.
+
+Additionally, you can specify the type of transfer (-type) as either 'file', 'folder', or 'zip'. 
+
+- The 'file' option treats each file individually, it ignores the directory structure of the source. All files are transferred directly to the root directory of traget
+- The 'folder' option transmits entire folders only when all files in them are ready.
+- The 'folder' option sends a folder zipped only when all files in the folder are ready.
+
+Choose the transfer protocol (-transfer) as either 'webdav' or 'sftp'.
+
+## Configuration
+Before running the utility, ensure that you configure the following:
+
+WebDAV or SFTP server settings.
+Source and destination directory paths.
+Duration threshold for file modification.
+User credentials for authentication.
+Transfer type and protocol.
+
+## Contributing
+Contributions are welcome! If you encounter any issues or have suggestions for improvement, please open an issue or submit a pull request.
+
+## License
+This project is licensed under the MIT License.
+
+
 
 
 
