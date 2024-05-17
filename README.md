@@ -22,7 +22,7 @@ Follow the section Usage for the configurations.
 
 To use the utility, run the following command:
 ```shell
-efw -src <source_directory_path> -duration <time_in_seconds> -dst <destination_server> -user <username> -pass <password> -type <file|folder|zip> -transfer <webdav|sftp>
+shuttle -src <source_directory_path> -duration <time_in_seconds> -dst <destination_server> -user <username> -pass <password> -type <file|folder|zip> -transfer <webdav|sftp>
 ```
 
 Replace <source_directory_path> with the path to the source directory 
