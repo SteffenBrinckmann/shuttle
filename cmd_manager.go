@@ -33,7 +33,7 @@ func GetCmdArgs() Args {
 	flag.StringVar(&crt, "crt", "{{ crt }}", "Path to server TLS certificate. Only needed if the server has a self signed certificate.")
 	/// Only considered if result are stored in a folder.
 	/// If zipped is set the result folder will be transferred as zip file
-	flag.StringVar(&sendType, "type", "{{ type }}", "Type must be 'file', 'folder' or 'zip'. The 'file' option means that each file is handled individually, the 'folder' option means that entire folders are transmitted only when all files in them are ready. The option 'zip' sends a folder zipped, only when all files in a folder are ready.")
+	flag.StringVar(&sendType, "type", "{{ type }}", "Type must be 'file', 'folder', 'tar' or 'zip'. The 'file' option means that each file is handled individually, the 'folder' option means that entire folders are transmitted only when all files in them are ready. The option 'tar' and/or 'zip' send a folder zipped, only when all files in a folder are ready.")
 	flag.StringVar(&tType, "transfer", "{{ tType }}", "Type must be 'webdav' or 'sftp'.")
 	flag.Parse()
 
@@ -41,8 +41,8 @@ func GetCmdArgs() Args {
 		log.Fatal("Duration must be an integer!")
 	}
 
-	if sendType != "file" && sendType != "folder" && sendType != "zip" {
-		err := "'type' has to be 'file', 'folder', or 'zip'"
+	if sendType != "file" && sendType != "folder" && sendType != "zip" && sendType != "tar" {
+		err := "'type' has to be 'file', 'folder', 'tar', or 'zip'"
 		log.Fatal(err)
 	}
 
