@@ -147,3 +147,56 @@ func TestZipFolder(t *testing.T) {
 
 	}
 }
+
+func TestTarFolder(t *testing.T) {
+	cleanTestDir()
+	defer cleanTestDir()
+
+	// Prepare Test
+	if err := os.MkdirAll("testDir/A/B", 0777); err != nil {
+		log.Fatal(err)
+	}
+	if err := os.MkdirAll("testDir/A/C", 0777); err != nil {
+		log.Fatal(err)
+	}
+	if err := os.MkdirAll("testDir/C", 0777); err != nil {
+		log.Fatal(err)
+	}
+
+	writeIntoFile("testDir/A/B/a.txt", "Hallo A_B_a")
+	writeIntoFile("testDir/A/b.txt", "Hallo A_c")
+	writeIntoFile("testDir/A/C/c.txt", "Hallo A_C_c")
+	writeIntoFile("testDir/C/d.txt", "Hallo C_d")
+	writeIntoFile("testDir/e.txt", "Hallo e")
+	// Done Prepare
+
+	folderA, err := tarFolder("testDir/A")
+	if err != nil {
+		return
+	}
+
+	folderC, err := tarFolder("testDir/C")
+	if err != nil {
+		return
+	}
+
+	folderE, err := tarFolder("testDir/e.txt")
+	if err != nil {
+		return
+	}
+
+	if _, err := os.Stat(folderA); err != nil {
+		t.Errorf("tarFolder(\"testDir/A\") did not work!")
+
+	}
+
+	if _, err := os.Stat(folderC); err != nil {
+		t.Errorf("tarFolder(\"testDir/C\") did not work!")
+
+	}
+
+	if _, err := os.Stat(folderE); err != nil {
+		t.Errorf("tarFolder(\"testDir/e.txt\") did not work!")
+
+	}
+}

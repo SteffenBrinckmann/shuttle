@@ -23,7 +23,7 @@ var (
 )
 
 // init initializes the logger and parses CMD args.
-func init() {
+func initTool() {
 	args = GetCmdArgs()
 
 	usr, err := user.Current()
@@ -81,6 +81,7 @@ func initArgs() {
 
 // main starts the ELN file watcher. See README for more information.
 func main() {
+	initTool()
 	initArgs()
 	now := time.Now()
 	InfoLogger.Println("Starting at ", now.Format(time.RFC822))

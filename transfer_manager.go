@@ -48,6 +48,17 @@ func doWorkImplementation(quit chan int, m TransferManager, args *Args) {
 						}
 					}
 
+				} else if args.sendType == "tar" {
+					zip_paht, err := tarFolder(to_send)
+					gErr = err
+					if err == nil {
+						if file, err := os.Stat(zip_paht); err != nil {
+							gErr = err
+						} else {
+							ok, gErr = m.send_file(zip_paht, file)
+						}
+					}
+
 				} else {
 					hasChanged := true
 					for hasChanged {
