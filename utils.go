@@ -3,11 +3,16 @@ package main
 import (
 	"archive/tar"
 	"archive/zip"
+	"bytes"
 	"compress/gzip"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 // getRootDir returns the root directory, i.e., the first directory in the path.
@@ -24,13 +29,68 @@ func getRootDir(path string) string {
 	}
 }
 
-func CopyDirectory(scrDir string) error {
+func RunPreScripts(filePath string) {
+	entries, err := os.ReadDir(PreScriptPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range entries {
+		if !file.IsDir() && strings.Contains(".exe.bat.sh.fish", filepath.Ext(file.Name())) {
+			var (
+				cmd *exec.Cmd
+			)
+			if runtime.GOOS == "windows" {
+				absScriptPath := filepath.Join(PreScriptPath, file.Name())
+				cmd = exec.Command("cmd", "/C", absScriptPath, "\""+filePath+"\"")
+			} else {
+				cmd = exec.Command("./"+file.Name(), filePath)
+			}
+
+			cmd.Dir = PreScriptPath
+			var outb, errb bytes.Buffer
+			cmd.Stdout = &outb
+			cmd.Stderr = &errb
+			err := cmd.Run()
+			if err != nil {
+				ErrorLogger.Println(err.Error())
+			}
+			InfoLogger.Println(file.Name(), "\n |-> out:", outb.String(), "\n |-> err:", errb.String())
+		}
+	}
+}
+
+func CopyPreTempDirectory(scrDir string) (string, error) {
+	_ = os.MkdirAll(PreTempPath, os.ModePerm)
+	newPath := filepath.Base(scrDir)
+	err := copyDirectory(scrDir, PreTempPath)
+	return filepath.Join(PreTempPath, newPath), err
+}
+
+func CopyTempDirectory() error {
+	entries, err := os.ReadDir(PreTempPath)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range entries {
+		absTempPath := filepath.Join(PreTempPath, file.Name())
+		err := copyDirectory(absTempPath, TempPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	return os.RemoveAll(PreTempPath)
+}
+
+func copyDirectory(scrDir string, destDir string) error {
 	return filepath.Walk(scrDir, func(sourcePath string, fileInfo os.FileInfo, e error) error {
 		destPath, err := filepath.Rel(filepath.Dir(scrDir), sourcePath)
 		if err != nil {
 			return err
 		}
-		destPath = filepath.Join(TempPath, destPath)
+		destPath = filepath.Join(destDir, destPath)
 		if fileInfo.IsDir() {
 			_ = os.MkdirAll(destPath, 0755)
 		} else {

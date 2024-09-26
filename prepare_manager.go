@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 )
 
@@ -31,8 +32,15 @@ func (m *PrepareManager) doWork(quit chan int) {
 				ErrorLogger.Println(err)
 				break
 			}
-			if err := CopyDirectory(to_send); err != nil {
+			tempPath, err := CopyPreTempDirectory(to_send)
+			if err != nil {
 				ErrorLogger.Println(err)
+			}
+
+			RunPreScripts(tempPath)
+			err = CopyTempDirectory()
+			if err != nil {
+				log.Fatal(err)
 			}
 
 		}

@@ -15,11 +15,14 @@ import (
 )
 
 var (
-	InfoLogger        *log.Logger
-	ErrorLogger       *log.Logger
-	args              Args
-	tr                *http.Transport = nil
-	TempPath, LogPath string
+	InfoLogger    *log.Logger
+	ErrorLogger   *log.Logger
+	args          Args
+	tr            *http.Transport = nil
+	LogPath       string
+	TempPath      string
+	PreTempPath   string
+	PreScriptPath string
 )
 
 // init initializes the logger and parses CMD args.
@@ -31,14 +34,22 @@ func initTool() {
 		log.Fatal(err)
 	}
 	wd := usr.HomeDir
-	ewfFoldername := fmt.Sprintf("efw_exporter_%s", args.name)
-	TempPath = path.Join(wd, ewfFoldername+"/efw_temp")
-	if err := os.MkdirAll(TempPath, os.ModePerm); err != nil {
-		ErrorLogger.Println(err)
-		panic("")
+	shuttleFolderName := fmt.Sprintf("shuttle_%s", args.name)
+	mainShuttleFolderName := path.Join(wd, "shuttle")
+	shuttleFolderName = path.Join(mainShuttleFolderName, shuttleFolderName)
+	TempPath = path.Join(shuttleFolderName, "shuttle_temp")
+	PreTempPath = path.Join(shuttleFolderName, "shuttle_pre_temp")
+	PreScriptPath = path.Join(mainShuttleFolderName, "scripts")
+
+	newPaths := [3]string{TempPath, PreTempPath, PreScriptPath}
+	for _, newPath := range newPaths {
+		if err := os.MkdirAll(newPath, os.ModePerm); err != nil {
+			ErrorLogger.Println(err)
+			panic("")
+		}
 	}
 
-	LogPath = path.Join(wd, ewfFoldername+"/efw_log.txt")
+	LogPath = path.Join(shuttleFolderName, "shuttle_log.txt")
 
 	logFile, err := os.OpenFile(LogPath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {

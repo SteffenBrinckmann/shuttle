@@ -1,6 +1,6 @@
-module ELN_file_watcher
+module Shuttle
 
-go 1.19
+go 1.23
 
 require (
 	github.com/StarmanMartin/gowebdav v0.0.0-20220901075112-8721ee532c0c
