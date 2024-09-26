@@ -36,13 +36,13 @@ func RunPreScripts(filePath string) {
 	}
 
 	for _, file := range entries {
-		if !file.IsDir() && strings.Contains(".exe.bat.sh.fish", filepath.Ext(file.Name())) {
+		if !file.IsDir() && strings.Contains(".exe.sh.fish", filepath.Ext(file.Name())) {
 			var (
 				cmd *exec.Cmd
 			)
 			if runtime.GOOS == "windows" {
 				absScriptPath := filepath.Join(PreScriptPath, file.Name())
-				cmd = exec.Command("cmd", "/C", absScriptPath, "\""+filePath+"\"")
+				cmd = exec.Command(absScriptPath, filePath)
 			} else {
 				cmd = exec.Command("./"+file.Name(), filePath)
 			}
