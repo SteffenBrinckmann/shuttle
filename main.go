@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -15,14 +14,15 @@ import (
 )
 
 var (
-	InfoLogger    *log.Logger
-	ErrorLogger   *log.Logger
-	args          Args
-	tr            *http.Transport = nil
-	LogPath       string
-	TempPath      string
-	PreTempPath   string
-	PreScriptPath string
+	InfoLogger      *log.Logger
+	ErrorLogger     *log.Logger
+	args            Args
+	tr              *http.Transport = nil
+	LogPath         string
+	TempPath        string
+	PreTempPath     string
+	FlatTarTempPath string
+	PreScriptPath   string
 )
 
 // init initializes the logger and parses CMD args.
@@ -39,9 +39,13 @@ func initTool() {
 	shuttleFolderName = path.Join(mainShuttleFolderName, shuttleFolderName)
 	TempPath = path.Join(shuttleFolderName, "shuttle_temp")
 	PreTempPath = path.Join(shuttleFolderName, "shuttle_pre_temp")
+	FlatTarTempPath = path.Join(shuttleFolderName, "shuttle_flat_tar_temp")
 	PreScriptPath = path.Join(mainShuttleFolderName, "scripts")
 
-	newPaths := [3]string{TempPath, PreTempPath, PreScriptPath}
+	newPaths := []string{TempPath, PreTempPath, PreScriptPath}
+	if args.sendType == "flat_tar" {
+		newPaths = append(newPaths, FlatTarTempPath)
+	}
 	for _, newPath := range newPaths {
 		if err := os.MkdirAll(newPath, os.ModePerm); err != nil {
 			ErrorLogger.Println(err)
@@ -72,7 +76,7 @@ func initArgs() {
 		rootCAs = x509.NewCertPool()
 	}
 	if isCert {
-		certs, err := ioutil.ReadFile(args.crt)
+		certs, err := os.ReadFile(args.crt)
 		if err == nil {
 			if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
 				ErrorLogger.Println("No certs appended, using system certs only")

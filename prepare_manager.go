@@ -33,6 +33,12 @@ func (m *PrepareManager) doWork(quit chan int) {
 				break
 			}
 			tempPath, err := CopyPreTempDirectory(to_send)
+			if m.args.sendType == "flat_tar" {
+				err := os.Remove(to_send)
+				if err != nil {
+					ErrorLogger.Println(err)
+				}
+			}
 			if err != nil {
 				ErrorLogger.Println(err)
 			}

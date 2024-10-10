@@ -14,6 +14,7 @@ type Args struct {
 	dst                  url.URL
 	duration             time.Duration
 	sendType             string
+	commonPrefixLength   int
 	tType, name          string
 }
 
@@ -21,6 +22,8 @@ type Args struct {
 func GetCmdArgs() Args {
 	var fp, dst, user, pass, crt, durationStr, tType, name string
 	var duration int
+	commonPrefixLength := 0
+	var commonPrefixLengthStr string
 	var sendType string
 	var err error
 
@@ -33,7 +36,8 @@ func GetCmdArgs() Args {
 	flag.StringVar(&crt, "crt", "{{ crt }}", "Path to server TLS certificate. Only needed if the server has a self signed certificate.")
 	/// Only considered if result are stored in a folder.
 	/// If zipped is set the result folder will be transferred as zip file
-	flag.StringVar(&sendType, "type", "{{ type }}", "Type must be 'file', 'folder', 'tar' or 'zip'. The 'file' option means that each file is handled individually, the 'folder' option means that entire folders are transmitted only when all files in them are ready. The option 'tar' and/or 'zip' send a folder zipped, only when all files in a folder are ready.")
+	flag.StringVar(&sendType, "type", "{{ type }}", "Type must be 'file', 'folder', 'tar', 'zip' or 'flat_tar'. The 'file' option means that each file is handled individually, the 'folder' option means that entire folders are transmitted only when all files in them are ready. The option 'tar' and/or 'zip' send a folder zipped, only when all files in a folder are ready. The flat_tar option packs all files with have a common prefix into a tar file in a flat folder hierarchy")
+	flag.StringVar(&commonPrefixLengthStr, "commonPrefixLength", "{{ cpf }}", "The common prefix length is only required if the type is flat_tar. This value specifies the number of leading characters that must be the same in order for files to be packed together.")
 	flag.StringVar(&tType, "transfer", "{{ tType }}", "Type must be 'webdav' or 'sftp'.")
 	flag.Parse()
 
@@ -41,9 +45,15 @@ func GetCmdArgs() Args {
 		log.Fatal("Duration must be an integer!")
 	}
 
-	if sendType != "file" && sendType != "folder" && sendType != "zip" && sendType != "tar" {
-		err := "'type' has to be 'file', 'folder', 'tar', or 'zip'"
+	if sendType != "file" && sendType != "folder" && sendType != "zip" && sendType != "tar" && sendType != "flat_tar" {
+		err := "'type' has to be 'file', 'folder', 'tar', 'zip' or flat_tar"
 		log.Fatal(err)
+	}
+
+	if sendType == "flat_tar" {
+		if commonPrefixLength, err = strconv.Atoi(commonPrefixLengthStr); err != nil {
+			log.Fatal("Common prefix length must be an integer if type is flat_tar!")
+		}
 	}
 
 	if tType != "webdav" && tType != "sftp" {
@@ -68,6 +78,6 @@ func GetCmdArgs() Args {
 		log.Fatal(err)
 	}
 
-	return Args{src: fp, dst: *u, user: user, pass: pass, crt: crt, duration: time.Duration(duration) * time.Second, sendType: sendType, tType: tType, name: name}
+	return Args{src: fp, dst: *u, user: user, pass: pass, crt: crt, duration: time.Duration(duration) * time.Second, sendType: sendType, tType: tType, name: name, commonPrefixLength: commonPrefixLength}
 
 }

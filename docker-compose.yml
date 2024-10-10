@@ -13,6 +13,7 @@ services:
             - USER_NAME=admin #optional
         volumes:
             - ./testDir/config:/config
+            - ./testDir/dst:/tmp
         ports:
             - 2222:2222
         restart: unless-stopped

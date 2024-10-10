@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -12,8 +14,73 @@ import (
 // not changed for almost exactly <CMD -duration> seconds,
 // the subdirectory will be pushed into the channel 'done_files'.
 type ProcessManager struct {
-	args       *Args
-	done_files chan string
+	args               *Args
+	done_files         chan string
+	done_flat_prefixes map[string]bool
+}
+
+func (m ProcessManager) collectTarPrefixes() {
+	entries, err := os.ReadDir(FlatTarTempPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for prefix := range m.done_flat_prefixes {
+		delete(m.done_flat_prefixes, prefix)
+	}
+
+	for _, v := range entries {
+		if v.IsDir() {
+			continue
+		}
+		m.done_flat_prefixes[v.Name()[0:m.args.commonPrefixLength]] = true
+	}
+}
+
+func (m ProcessManager) processTarPrefixes() {
+	entries, err := os.ReadDir(FlatTarTempPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for prefix := range m.done_flat_prefixes {
+		dirName := filepath.Join(FlatTarTempPath, prefix)
+		err := os.MkdirAll(dirName, os.ModeDir|os.ModePerm)
+		if err != nil {
+			ErrorLogger.Println(err)
+			continue
+		}
+		for _, v := range entries {
+			if v.IsDir() {
+				continue
+			}
+			if strings.HasPrefix(v.Name(), prefix) {
+				sourcePath := filepath.Join(FlatTarTempPath, v.Name())
+				err := Copy(sourcePath, filepath.Join(dirName, v.Name()))
+				if err != nil {
+					ErrorLogger.Println(err)
+				}
+				err = os.Remove(sourcePath)
+			}
+		}
+
+		tarPaht, err := tarFolder(dirName)
+		if err != nil {
+			ErrorLogger.Println(err)
+		}
+
+		err = Copy(tarPaht, filepath.Join(dirName, filepath.Base(tarPaht)))
+		if err != nil {
+			ErrorLogger.Println(err)
+		}
+		m.done_files <- tarPaht
+		err = os.RemoveAll(dirName)
+		if err != nil {
+			ErrorLogger.Println(err)
+			continue
+		}
+
+		delete(m.done_flat_prefixes, prefix)
+	}
 }
 
 // doWork runs in a endless loop. It watches the files in the <CMD arg -src> directory.
@@ -39,7 +106,7 @@ func (m ProcessManager) doWork(quit chan int) {
 						if diff < 2*m.args.duration {
 							if relpath, err := filepath.Rel(m.args.src, path); err == nil {
 								folder := relpath
-								if m.args.sendType != "file" {
+								if m.args.sendType != "file" && m.args.sendType != "flat_tar" {
 									folder = getRootDir(relpath)
 								}
 
@@ -62,19 +129,35 @@ func (m ProcessManager) doWork(quit chan int) {
 			}
 
 			// Pushing all complete subdirectory into done_files channel.
-			for k, v := range done_folders {
-				if v {
-					InfoLogger.Println("Folder ready to send: ", k)
-					m.done_files <- filepath.Join(m.args.src, k)
-				}
+			if m.args.sendType == "flat_tar" {
+				m.collectTarPrefixes()
 			}
 
-			time.Sleep(m.args.duration - time.Now().Sub(now))
+			for k, v := range done_folders {
+				if v {
+					InfoLogger.Println("Folder/File ready to send: ", k)
+					if m.args.sendType == "flat_tar" {
+						src := filepath.Join(m.args.src, k)
+						dst := filepath.Join(FlatTarTempPath, filepath.Base(k))
+						err := Copy(src, dst)
+						if err != nil {
+							ErrorLogger.Println(err)
+						}
+					} else {
+						m.done_files <- filepath.Join(m.args.src, k)
+					}
+				}
+			}
+			if m.args.sendType == "flat_tar" {
+				m.processTarPrefixes()
+			}
+
+			time.Sleep(m.args.duration - time.Since(now))
 		}
 	}
 }
 
 // newProcessManager factory for ProcessManager struct
 func newProcessManager(args *Args, done_files chan string) ProcessManager {
-	return ProcessManager{args: args, done_files: done_files}
+	return ProcessManager{args: args, done_files: done_files, done_flat_prefixes: make(map[string]bool)}
 }
