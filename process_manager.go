@@ -20,7 +20,7 @@ type ProcessManager struct {
 }
 
 func (m ProcessManager) collectTarPrefixes() {
-	entries, err := os.ReadDir(FlatTarTempPath)
+	entries, err := ReadDir(FlatTarTempPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func (m ProcessManager) collectTarPrefixes() {
 }
 
 func (m ProcessManager) processTarPrefixes() {
-	entries, err := os.ReadDir(FlatTarTempPath)
+	entries, err := ReadDir(FlatTarTempPath)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -30,7 +30,7 @@ func getRootDir(path string) string {
 }
 
 func RunPreScripts(filePath string) {
-	entries, err := os.ReadDir(PreScriptPath)
+	entries, err := ReadDir(PreScriptPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func CopyPreTempDirectory(scrDir string) (string, error) {
 }
 
 func CopyTempDirectory() error {
-	entries, err := os.ReadDir(PreTempPath)
+	entries, err := ReadDir(PreTempPath)
 	if err != nil {
 		return err
 	}
