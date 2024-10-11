@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -20,7 +21,7 @@ type ProcessManager struct {
 }
 
 func (m ProcessManager) collectTarPrefixes() {
-	entries, err := ReadDir(FlatTarTempPath)
+	entries, err := ioutil.ReadDir(FlatTarTempPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,7 +38,7 @@ func (m ProcessManager) collectTarPrefixes() {
 }
 
 func (m ProcessManager) processTarPrefixes() {
-	entries, err := ReadDir(FlatTarTempPath)
+	entries, err := ioutil.ReadDir(FlatTarTempPath)
 	if err != nil {
 		log.Fatal(err)
 	}
