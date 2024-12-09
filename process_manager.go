@@ -17,7 +17,19 @@ import (
 type ProcessManager struct {
 	args               *Args
 	done_files         chan string
-	done_flat_prefixes map[string]bool
+	done_flat_prefixes map[string][]string
+}
+
+func (m ProcessManager) applyRegex(name string) []string {
+	res := m.args.commonRegex.FindStringSubmatch(name)
+	if res == nil {
+		res = append(res, name+"_dir")
+	}
+	if len(res) > 1 {
+		res = res[1:]
+	}
+
+	return res
 }
 
 func (m ProcessManager) collectTarPrefixes() {
@@ -33,7 +45,9 @@ func (m ProcessManager) collectTarPrefixes() {
 		if v.IsDir() {
 			continue
 		}
-		m.done_flat_prefixes[v.Name()[0:m.args.commonPrefixLength]] = true
+		res := m.applyRegex(v.Name())
+		joined_res := strings.Join(res, "___")
+		m.done_flat_prefixes[joined_res] = res
 	}
 }
 
@@ -43,8 +57,8 @@ func (m ProcessManager) processTarPrefixes() {
 		log.Fatal(err)
 	}
 
-	for prefix := range m.done_flat_prefixes {
-		dirName := filepath.Join(FlatTarTempPath, prefix)
+	for hash_prefix, groups := range m.done_flat_prefixes {
+		dirName := filepath.Join(FlatTarTempPath, hash_prefix)
 		err := os.MkdirAll(dirName, os.ModeDir|os.ModePerm)
 		if err != nil {
 			ErrorLogger.Println(err)
@@ -54,7 +68,10 @@ func (m ProcessManager) processTarPrefixes() {
 			if v.IsDir() {
 				continue
 			}
-			if strings.HasPrefix(v.Name(), prefix) {
+
+			res := m.applyRegex(v.Name())
+
+			if AreEqual(res, groups) {
 				sourcePath := filepath.Join(FlatTarTempPath, v.Name())
 				err := Copy(sourcePath, filepath.Join(dirName, v.Name()))
 				if err != nil {
@@ -80,7 +97,7 @@ func (m ProcessManager) processTarPrefixes() {
 			continue
 		}
 
-		delete(m.done_flat_prefixes, prefix)
+		delete(m.done_flat_prefixes, hash_prefix)
 	}
 }
 
@@ -160,5 +177,5 @@ func (m ProcessManager) doWork(quit chan int) {
 
 // newProcessManager factory for ProcessManager struct
 func newProcessManager(args *Args, done_files chan string) ProcessManager {
-	return ProcessManager{args: args, done_files: done_files, done_flat_prefixes: make(map[string]bool)}
+	return ProcessManager{args: args, done_files: done_files, done_flat_prefixes: make(map[string][]string)}
 }

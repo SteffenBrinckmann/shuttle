@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -14,7 +15,7 @@ type Args struct {
 	dst                  url.URL
 	duration             time.Duration
 	sendType             string
-	commonPrefixLength   int
+	commonRegex          *regexp.Regexp
 	tType, name          string
 }
 
@@ -22,8 +23,8 @@ type Args struct {
 func GetCmdArgs() Args {
 	var fp, dst, user, pass, crt, durationStr, tType, name string
 	var duration int
-	commonPrefixLength := 0
-	var commonPrefixLengthStr string
+	var commonRegexStr string
+	var commonRegex *regexp.Regexp
 	var sendType string
 	var err error
 
@@ -37,7 +38,7 @@ func GetCmdArgs() Args {
 	/// Only considered if result are stored in a folder.
 	/// If zipped is set the result folder will be transferred as zip file
 	flag.StringVar(&sendType, "type", "{{ type }}", "Type must be 'file', 'folder', 'tar', 'zip' or 'flat_tar'. The 'file' option means that each file is handled individually, the 'folder' option means that entire folders are transmitted only when all files in them are ready. The option 'tar' and/or 'zip' send a folder zipped, only when all files in a folder are ready. The flat_tar option packs all files with have a common prefix into a tar file in a flat folder hierarchy")
-	flag.StringVar(&commonPrefixLengthStr, "commonPrefixLength", "{{ cpf }}", "The common prefix length is only required if the type is flat_tar. This value specifies the number of leading characters that must be the same in order for files to be packed together.")
+	flag.StringVar(&commonRegexStr, "commonRegex", "{{ common_regex }}", "The common prefix length is only required if the type is flat_tar. This value specifies the number of leading characters that must be the same in order for files to be packed together.")
 	flag.StringVar(&tType, "transfer", "{{ tType }}", "Type must be 'webdav' or 'sftp'.")
 	flag.Parse()
 
@@ -51,7 +52,7 @@ func GetCmdArgs() Args {
 	}
 
 	if sendType == "flat_tar" {
-		if commonPrefixLength, err = strconv.Atoi(commonPrefixLengthStr); err != nil {
+		if commonRegex, err = regexp.Compile(commonRegexStr); err != nil {
 			log.Fatal("Common prefix length must be an integer if type is flat_tar!")
 		}
 	}
@@ -69,7 +70,7 @@ func GetCmdArgs() Args {
 	u, err := url.Parse(dst)
 	if (err != nil || u.Scheme == "") && tType == "sftp" {
 		u, err = url.Parse("ssh://" + dst)
-		if !strings.Contains(u.Host, ":") {
+		if err == nil && !strings.Contains(u.Host, ":") {
 			u.Host += ":22"
 		}
 	}
@@ -78,6 +79,6 @@ func GetCmdArgs() Args {
 		log.Fatal(err)
 	}
 
-	return Args{src: fp, dst: *u, user: user, pass: pass, crt: crt, duration: time.Duration(duration) * time.Second, sendType: sendType, tType: tType, name: name, commonPrefixLength: commonPrefixLength}
+	return Args{src: fp, dst: *u, user: user, pass: pass, crt: crt, duration: time.Duration(duration) * time.Second, sendType: sendType, tType: tType, name: name, commonRegex: commonRegex}
 
 }
