@@ -20,16 +20,21 @@ type ProcessManager struct {
 	done_flat_prefixes map[string][]string
 }
 
-func (m ProcessManager) applyRegex(name string) []string {
+func (m ProcessManager) applyRegex(name string) ([]string, string) {
 	res := m.args.commonRegex.FindStringSubmatch(name)
 	if res == nil {
-		res = append(res, name+"_dir")
+		res = make([]string, 1, 1)
+		res[0] = name + "_archive"
 	}
 	if len(res) > 1 {
 		res = res[1:]
 	}
+	joined_res := strings.Join(res, "___")
+	if len(joined_res) == 0 || joined_res == name {
+		joined_res = name + "_archive"
+	}
 
-	return res
+	return res, joined_res
 }
 
 func (m ProcessManager) collectTarPrefixes() {
@@ -45,8 +50,7 @@ func (m ProcessManager) collectTarPrefixes() {
 		if v.IsDir() {
 			continue
 		}
-		res := m.applyRegex(v.Name())
-		joined_res := strings.Join(res, "___")
+		res, joined_res := m.applyRegex(v.Name())
 		m.done_flat_prefixes[joined_res] = res
 	}
 }
@@ -69,7 +73,7 @@ func (m ProcessManager) processTarPrefixes() {
 				continue
 			}
 
-			res := m.applyRegex(v.Name())
+			res, _ := m.applyRegex(v.Name())
 
 			if AreEqual(res, groups) {
 				sourcePath := filepath.Join(FlatTarTempPath, v.Name())
