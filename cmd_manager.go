@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/url"
 	"regexp"
@@ -17,6 +18,14 @@ type Args struct {
 	sendType             string
 	commonRegex          *regexp.Regexp
 	tType, name          string
+}
+
+func (m Args) LogString() string {
+	commonRegexStr := ""
+	if m.sendType == "flat_tar" {
+		commonRegexStr = "\n commonRegex=" + m.commonRegex.String()
+	}
+	return fmt.Sprintf("\n-----------------------------\nLogfile: %s\n-----------------------------\nCMD Args:\n name=%s,\n dst=%s,\n src=%s,\n duration=%d sec.,\n user=%s,\n type=%s,\n transfer=%s%s\n-----------------------------\n", LogPath, args.name, args.dst.String(), args.src, int(args.duration.Seconds()), args.user, args.sendType, args.tType, commonRegexStr)
 }
 
 // GetCmdArgs Get/Parse command line arguments manager
