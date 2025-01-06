@@ -1,4 +1,5 @@
 #!/usr/local/bin/python
+# This cannot be in go, since you cannot execute a go command from within go
 import os
 
 # get data from go-file
@@ -12,9 +13,10 @@ with open('default_parameter.go', encoding='utf-8') as fIn:
 osDict = {
     #label   os          arch     extension
     "linux":["linux",   "amd64", "out"] ,
-    "winXP":["windows", "386",   "exe"],
+    "winxp":["windows", "386",   "exe"],
     "win10":["windows", "amd64", "exe"]
 }
 osList = osDict[data['os'].lower()]
 
 os.system(f"env GOOS={osList[0]} GOARCH={osList[1]} go build -o shuttle.{osList[2]}")
+
