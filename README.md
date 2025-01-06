@@ -31,12 +31,22 @@ Shuttle is a utility that facilitates seamless file transfer from a source devic
 
 ## **Usage**
 
-> **Note:** If you used the [ShuttleBuilder](https://github.com/ComPlat/shuttlebuilder), CLI arguments are preconfigured and do not need to be manually added.
+### ShuttleBuilder
+If you used the [ShuttleBuilder](https://github.com/ComPlat/shuttlebuilder), CLI arguments are preconfigured and do not need to be manually added.
 
+### Execute by adding command line arguments
 To run the utility, execute the following command:
 
 ```shell
+go build
 shuttle -src < source_directory_path > -duration < time_in_seconds > -dst < destination_server > -user < username > -pass < password > -type < file|folder|zip|tar|flat_tar > -transfer < webdav|sftp > -commonRegex < Regexp >
+```
+
+### Create a executable that contains default parameters
+1. Edit the default parameters in "default_parameter.go"
+1. Execute build which will create an executable for the desired operating system
+```shell
+python build.py
 ```
 
 ### Parameters:
@@ -102,5 +112,5 @@ This project is licensed under the MIT License.
 
 
 
-  
+
 
