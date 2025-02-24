@@ -1,7 +1,8 @@
-# Documentation
-## Usage of shuttle
+# Verify shuttle-parent and shuttle
+This document describes how to test shuttle-bulider and the resulting shuttle using a temporary test sftp server.
 
-### Linux
+## Usage of shuttle-parent and shuttle
+### Linux instrument computer
 1. Create data directory and open the parameter file. Open firefox and go to  https://sftpcloud.io/tools/free-sftp-server to create a temporary sftp server. Put the data into the parameter file.
     ``` bash
     >~/.../Repositories/shuttle$ mkdir ~/Temporary/shuttleTest
@@ -21,9 +22,9 @@
             src: "/home/steffen/Temporary/shuttleTest",
             name: "Linux test",
             os: "linux",
-            dst: "eu-central-1.sftpcloud.io",
-            user: "606ff7aba10c441e90891ab39ae64cfb",
-            pass: "8No1fUsRqLFBwly1DQ45g9OLhbfkRriN",
+            dst: "server123",
+            user: "user123",
+            pass: "password123",
             duration: "5",
             sendType: "sftp",
             tType: "file"}
@@ -53,10 +54,10 @@
     -----------------------------
     CMD Args:
     name=Linux test,
-    dst=ssh://eu-central-1.sftpcloud.io:22,
+    dst=ssh://server123:22,
     src=/home/steffen/Temporary/shuttleTest,
     duration=5 sec.,
-    user=606ff7aba10c441e90891ab39ae64cfb,
+    user=user123,
     type=file,
     transfer=sftp
     -----------------------------
@@ -80,9 +81,9 @@
 
 4. Go to sftp server, list the content, and get the file to the local desktop. Show its content
     ``` bash
-    >~/.../Repositories/shuttle$ sftp 606ff7aba10c441e90891ab39ae64cfb@eu-central-1.sftpcloud.io
-    606ff7aba10c441e90891ab39ae64cfb@eu-central-1.sftpcloud.io's password:
-    Connected to eu-central-1.sftpcloud.io.
+    >~/.../Repositories/shuttle$ sftp user123@server123
+    user123@server123's password:
+    Connected to server123.
     sftp> ls
     linux2.txt
     sftp> get linux2.txt
@@ -93,7 +94,7 @@
     This a linux file with numbers 1,2,3
     ```
 
-### Windows
+### Windows 10 instrument computer
 1. Edit the parameter file for windows, and show it here in linux. Build the windows file and list the files.
     ``` bash
     >~/.../Repositories/shuttle$ more default_parameter.go
@@ -108,9 +109,9 @@
             src: "C:\\shuttleTest",
             name: "Windows test",
             os: "win10",
-            dst: "eu-central-1.sftpcloud.io",
-            user: "606ff7aba10c441e90891ab39ae64cfb",
-            pass: "8No1fUsRqLFBwly1DQ45g9OLhbfkRriN",
+            dst: "server123",
+            user: "user123",
+            pass: "password123",
             duration: "5",
             sendType: "sftp",
             tType: "file"}
@@ -141,10 +142,10 @@
     -----------------------------
     CMD Args:
     name=Windows test,
-    dst=ssh://eu-central-1.sftpcloud.io:22,
+    dst=ssh://server123:22,
     src=C:\shuttleTest,
     duration=5 sec.,
-    user=606ff7aba10c441e90891ab39ae64cfb,
+    user=user123,
     type=file,
     transfer=sftp
     -----------------------------
@@ -162,9 +163,9 @@
 4. Reboot to linux to verify and finish. Change to the folder, use sftp to list and get the windows.txt file.
     ``` bash
     cd FZJ/DataScience/Repositories/shuttle/
-    >~/.../Repositories/shuttle$ sftp 606ff7aba10c441e90891ab39ae64cfb@eu-central-1.sftpcloud.io
-    606ff7aba10c441e90891ab39ae64cfb@eu-central-1.sftpcloud.io's password:
-    Connected to eu-central-1.sftpcloud.io.
+    >~/.../Repositories/shuttle$ sftp user123@server123
+    user123@server123's password:
+    Connected to server123.
     sftp> ls
     linux2.txt   windows.txt
     sftp> get windows.txt
